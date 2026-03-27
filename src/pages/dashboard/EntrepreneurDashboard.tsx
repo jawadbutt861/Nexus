@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Bell, Calendar, TrendingUp, AlertCircle, PlusCircle } from 'lucide-react';
+import { Users, Bell, Calendar, TrendingUp, AlertCircle, PlusCircle, Wallet } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -10,6 +10,8 @@ import { useAuth } from '../../context/AuthContext';
 import { CollaborationRequest } from '../../types';
 import { getRequestsForEntrepreneur } from '../../data/collaborationRequests';
 import { investors } from '../../data/users';
+import { getWallet } from '../../data/transactions';
+import { getMeetingsForUser } from '../../data/meetings';
 
 export const EntrepreneurDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -18,7 +20,6 @@ export const EntrepreneurDashboard: React.FC = () => {
   
   useEffect(() => {
     if (user) {
-      // Load collaboration requests
       const requests = getRequestsForEntrepreneur(user.id);
       setCollaborationRequests(requests);
     }
@@ -35,6 +36,8 @@ export const EntrepreneurDashboard: React.FC = () => {
   if (!user) return null;
   
   const pendingRequests = collaborationRequests.filter(req => req.status === 'pending');
+  const wallet = getWallet(user.id);
+  const upcomingMeetings = getMeetingsForUser(user.id).filter(m => m.status === 'confirmed').length;
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -54,7 +57,7 @@ export const EntrepreneurDashboard: React.FC = () => {
       </div>
       
       {/* Summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-tour="dashboard-stats">
         <Card className="bg-primary-50 border border-primary-100">
           <CardBody>
             <div className="flex items-center">
@@ -93,7 +96,7 @@ export const EntrepreneurDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-accent-700">Upcoming Meetings</p>
-                <h3 className="text-xl font-semibold text-accent-900">2</h3>
+                <h3 className="text-xl font-semibold text-accent-900">{upcomingMeetings}</h3>
               </div>
             </div>
           </CardBody>
@@ -114,6 +117,22 @@ export const EntrepreneurDashboard: React.FC = () => {
         </Card>
       </div>
       
+      {/* Quick links */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Link to="/calendar" className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors text-sm font-medium text-gray-700">
+          <Calendar size={18} className="text-primary-600" /> Calendar
+        </Link>
+        <Link to="/video" className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors text-sm font-medium text-gray-700">
+          <TrendingUp size={18} className="text-secondary-600" /> Video Calls
+        </Link>
+        <Link to="/document-chamber" className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors text-sm font-medium text-gray-700">
+          <Bell size={18} className="text-accent-600" /> Documents
+        </Link>
+        <Link to="/payments" className="flex items-center gap-2 p-3 bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors text-sm font-medium text-gray-700">
+          <Wallet size={18} className="text-success-700" /> Wallet: ${wallet.balance.toLocaleString()}
+        </Link>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Collaboration requests */}
         <div className="lg:col-span-2 space-y-4">

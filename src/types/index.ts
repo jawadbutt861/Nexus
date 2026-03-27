@@ -68,6 +68,35 @@ export interface Document {
   ownerId: string;
 }
 
+export interface MeetingSlot {
+  id: string;
+  hostId: string;
+  guestId?: string;
+  title: string;
+  date: string; // ISO date string
+  startTime: string; // HH:mm
+  endTime: string;
+  status: 'available' | 'requested' | 'confirmed' | 'declined';
+  notes?: string;
+}
+
+export interface Transaction {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  amount: number;
+  type: 'deposit' | 'withdrawal' | 'transfer' | 'deal_funding';
+  status: 'pending' | 'completed' | 'failed';
+  description: string;
+  timestamp: string;
+}
+
+export interface WalletBalance {
+  userId: string;
+  balance: number;
+  currency: string;
+}
+
 export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string, role: UserRole) => Promise<void>;

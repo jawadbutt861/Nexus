@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 
+import { AppTour } from '../../components/walkthrough/AppTour';
+
 export const DashboardLayout: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   
@@ -32,6 +34,7 @@ export const DashboardLayout: React.FC = () => {
           </div>
         </main>
       </div>
+      <AppTour />
     </div>
   );
 };
