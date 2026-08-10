@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 
 // Layouts
@@ -40,6 +41,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <Toaster position="top-right" reverseOrder={false} />
         <Routes>
           {/* Authentication Routes */}
           <Route path="/login" element={<LoginPage />} />
