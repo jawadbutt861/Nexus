@@ -23,14 +23,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Check for stored user on initial load
   useEffect(() => {
-    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
-    const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    const restoreSession = async () => {
+      const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+      const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
 
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      api.defaults.headers.common.Authorization = `Bearer ${storedToken}`;
-    }
-    setIsLoading(false);
+      if (!storedUser || !storedToken) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        api.defaults.headers.common.Authorization = `Bearer ${storedToken}`;
+        const response = await api.get('/auth/me');
+        const authUser = response.data.user;
+        setUser(authUser);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(authUser));
+      } catch {
+        localStorage.removeItem(USER_STORAGE_KEY);
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        delete api.defaults.headers.common.Authorization;
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    restoreSession();
   }, []);
 
   const login = async (email: string, password: string, role: UserRole): Promise<void> => {

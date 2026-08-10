@@ -9,6 +9,8 @@ import { DashboardLayout } from './components/layout/DashboardLayout';
 // Auth Pages
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 
 // Dashboard Pages
 import { EntrepreneurDashboard } from './pages/dashboard/EntrepreneurDashboard';
@@ -36,6 +38,7 @@ import { CalendarPage } from './pages/calendar/CalendarPage';
 import { VideoCallPage } from './pages/video/VideoCallPage';
 import { DocumentChamberPage } from './pages/documents/DocumentChamberPage';
 import { PaymentsPage } from './pages/payments/PaymentsPage';
+import { AdminPage } from './pages/admin/AdminPage';
 
 function App() {
   return (
@@ -46,6 +49,8 @@ function App() {
           {/* Authentication Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           
           {/* Dashboard Routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
@@ -114,6 +119,8 @@ function App() {
           <Route path="/payments" element={<DashboardLayout />}>
             <Route index element={<PaymentsPage />} />
           </Route>
+
+          <Route path="/admin" element={<AdminPage />} />
           
           {/* Redirect root to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />

@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 6 },
-  role: { type: String, required: true, enum: ['entrepreneur', 'investor'] },
+  role: { type: String, required: true, enum: ['entrepreneur', 'investor', 'admin'] },
   avatarUrl: { type: String, default: '' },
   bio: { type: String, default: '' },
   isOnline: { type: Boolean, default: true },
@@ -36,12 +36,29 @@ function getUserModel() {
   return cachedUserModel;
 }
 
+async function seedDefaultAdmin() {
+  const User = getUserModel();
+  const existingAdmin = await User.findOne({ email: 'admin@businessnexus.com' });
+  if (!existingAdmin) {
+    await User.create({
+      name: 'System Admin',
+      email: 'admin@businessnexus.com',
+      password: 'password123',
+      role: 'admin',
+      avatarUrl: 'https://ui-avatars.com/api/?name=System+Admin&background=0d9488',
+      bio: 'Platform administrator',
+      isOnline: true,
+    });
+  }
+}
+
 async function connectToDatabase() {
   if (cachedConnection && cachedConnection.readyState === 1) {
     return cachedConnection;
   }
 
   cachedConnection = await mongoose.connect(MONGODB_URI, { dbName: DB_NAME });
+  await seedDefaultAdmin();
   return cachedConnection;
 }
 

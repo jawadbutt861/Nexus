@@ -7,10 +7,10 @@ import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-dotenv.config({ path: path.join(__dirname, '.env') });
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 6 },
-  role: { type: String, required: true, enum: ['entrepreneur', 'investor'] },
+  role: { type: String, required: true, enum: ['entrepreneur', 'investor', 'admin'] },
   avatarUrl: { type: String, default: '' },
   bio: { type: String, default: '' },
   isOnline: { type: Boolean, default: true },
@@ -38,6 +38,26 @@ userSchema.pre('save', async function (next) {
 });
 
 const User = mongoose.model('User', userSchema);
+
+const seedDefaultAdmin = async () => {
+  try {
+    const existingAdmin = await User.findOne({ email: 'admin@businessnexus.com' });
+    if (!existingAdmin) {
+      await User.create({
+        name: 'System Admin',
+        email: 'admin@businessnexus.com',
+        password: 'password123',
+        role: 'admin',
+        avatarUrl: 'https://ui-avatars.com/api/?name=System+Admin&background=0d9488',
+        bio: 'Platform administrator',
+        isOnline: true,
+      });
+      console.log('Seeded default admin user');
+    }
+  } catch (error) {
+    console.error('Admin seeding failed:', error.message);
+  }
+};
 
 const serializeUser = (user) => ({
   id: user._id?.toString() || user.id,
@@ -190,8 +210,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 mongoose.connect(MONGODB_URI, { dbName: 'business-nexus' })
-  .then(() => {
+  .then(async () => {
     console.log('Connected to MongoDB');
+    await seedDefaultAdmin();
     app.listen(PORT, () => {
       console.log(`Server listening on http://localhost:${PORT}`);
     });
