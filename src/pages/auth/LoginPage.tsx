@@ -56,7 +56,7 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
     try {
       await login(email, password, role);
-      navigate(role === 'admin' ? '/admin' : role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
+      navigate(role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
     } catch (err) {
       setError((err as Error).message);
       setIsLoading(false);
@@ -64,7 +64,7 @@ export const LoginPage: React.FC = () => {
   };
 
   const fillDemo = (userRole: UserRole) => {
-    setEmail(userRole === 'entrepreneur' ? 'sarah@techwave.io' : userRole === 'investor' ? 'michael@vcinnovate.com' : 'admin@businessnexus.com');
+    setEmail(userRole === 'entrepreneur' ? 'sarah@techwave.io' : 'michael@vcinnovate.com');
     setPassword('password123');
     setRole(userRole);
   };
@@ -112,12 +112,12 @@ export const LoginPage: React.FC = () => {
             <form className="space-y-6" onSubmit={handleCredentials}>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">I am a</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {(['entrepreneur', 'investor', 'admin'] as UserRole[]).map(r => (
+                <div className="grid grid-cols-2 gap-3">
+                  {(['entrepreneur', 'investor'] as UserRole[]).map(r => (
                     <button key={r} type="button"
                       className={`py-3 px-4 border rounded-md flex items-center justify-center transition-colors capitalize ${role === r ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                       onClick={() => setRole(r)}>
-                      {r === 'entrepreneur' ? <Building2 size={18} className="mr-2" /> : r === 'investor' ? <CircleDollarSign size={18} className="mr-2" /> : <Shield size={18} className="mr-2" />}
+                      {r === 'entrepreneur' ? <Building2 size={18} className="mr-2" /> : <CircleDollarSign size={18} className="mr-2" />}
                       {r}
                     </button>
                   ))}

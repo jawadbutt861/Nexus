@@ -103,6 +103,9 @@ app.post('/api/auth/register', async (req, res) => {
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: 'Please provide name, email, password, and role' });
     }
+    if (!['entrepreneur', 'investor'].includes(role)) {
+      return res.status(403).json({ message: 'This role cannot be registered publicly' });
+    }
 
     const normalizedEmail = email.toLowerCase();
     const existingUser = await User.findOne({ email: normalizedEmail });
@@ -131,6 +134,25 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+    return res.json({ user: serializeUser(user), token });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Admin login failed' });
+  }
+});
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -144,6 +166,9 @@ app.post('/api/auth/login', async (req, res) => {
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Use the admin login endpoint' });
     }
 
     if (role && user.role !== role) {

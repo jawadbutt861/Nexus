@@ -119,7 +119,10 @@ export default async function handler(req, res) {
     return;
   }
 
-  const pathname = req.url?.split('?')[0] || '/';
+  const requestedPath = Array.isArray(req.query?.path)
+    ? req.query.path.join('/')
+    : req.query?.path;
+  const pathname = requestedPath ? `/api/${requestedPath}` : req.url?.split('?')[0] || '/';
   const route = pathname.replace(/^\/api\/?/, '/');
 
   await connectToDatabase();
@@ -137,6 +140,10 @@ export default async function handler(req, res) {
 
       if (!name || !email || !password || !role) {
         res.status(400).json({ message: 'Please provide name, email, password, and role' });
+        return;
+      }
+      if (!['entrepreneur', 'investor'].includes(role)) {
+        res.status(403).json({ message: 'This role cannot be registered publicly' });
         return;
       }
 
@@ -165,6 +172,29 @@ export default async function handler(req, res) {
     return;
   }
 
+  if (route === '/admin/login' && req.method === 'POST') {
+    try {
+      const body = parseBody(req);
+      const { email, password } = body;
+      if (!email || !password) {
+        res.status(400).json({ message: 'Email and password are required' });
+        return;
+      }
+
+      const user = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        res.status(401).json({ message: 'Invalid admin credentials' });
+        return;
+      }
+
+      const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+      res.status(200).json({ user: serializeUser(user), token });
+    } catch (error) {
+      res.status(500).json({ message: error.message || 'Admin login failed' });
+    }
+    return;
+  }
+
   if (route === '/auth/login' && req.method === 'POST') {
     try {
       const body = parseBody(req);
@@ -179,6 +209,10 @@ export default async function handler(req, res) {
       const user = await User.findOne({ email: normalizedEmail });
       if (!user) {
         res.status(401).json({ message: 'Invalid credentials' });
+        return;
+      }
+      if (user.role === 'admin') {
+        res.status(403).json({ message: 'Use the admin login endpoint' });
         return;
       }
 
